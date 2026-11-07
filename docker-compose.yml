@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  scoutai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scoutai-app
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - SEARCH_PROVIDER=${SEARCH_PROVIDER:-ddg}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - CORS_ORIGINS=*
+    volumes:
+      - scoutai_data:/app/data
+      - scoutai_chroma:/app/chroma_data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  scoutai_data:
+  scoutai_chroma:
