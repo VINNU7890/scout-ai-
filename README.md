@@ -56,6 +56,41 @@ Experience ScoutAI live on the cloud:
 
 ---
 
+## 📸 Screenshots & Interface Tour
+
+<div align="center">
+  <h3>1. Autonomous Research Setup</h3>
+  <img src="docs/screenshots/01_home_dashboard.png" alt="Home Dashboard" width="850" />
+  <p><i>Configure research queries, select depth (Quick / Standard / Deep), customize focus areas, and upload internal battlecards for vector RAG.</i></p>
+  <br/>
+
+  <h3>2. Live Multi-Node Agent Orchestration</h3>
+  <img src="docs/screenshots/02_agent_timeline.png" alt="Agent Timeline" width="850" />
+  <p><i>Real-time Server-Sent Events (SSE) stream live node execution across Planner, Web/Doc Researchers, Analyst, Writer, and Verifier.</i></p>
+  <br/>
+
+  <h3>3. Executive Briefing with Grounded Citations</h3>
+  <img src="docs/screenshots/03_executive_report.png" alt="Executive Report" width="850" />
+  <p><i>Synthesized executive summaries, key takeaways, and competitor profiles with interactive inline citation popovers [1], [2].</i></p>
+  <br/>
+
+  <h3>4. Interactive Cross-Entity Comparison Matrix</h3>
+  <img src="docs/screenshots/04_comparison_matrix.png" alt="Comparison Matrix" width="850" />
+  <p><i>Dense aspect matrix comparing pricing, compliance, and features. Click any cell to inspect verbatim source evidence quotes (≤25 words).</i></p>
+  <br/>
+
+  <h3>5. Multi-Entity Radar & Scorecard Analytics</h3>
+  <img src="docs/screenshots/05_scorecard_radar.png" alt="Scorecard Radar" width="850" />
+  <p><i>Recharts radar chart scoring entities from 1–5 across compliance, product features, pricing, trust signals, and GTM strategy.</i></p>
+  <br/>
+
+  <h3>6. Grounded Follow-up Research AI Chat</h3>
+  <img src="docs/screenshots/06_grounded_chat.png" alt="Grounded Chat" width="850" />
+  <p><i>Interactive follow-up Q&A answering executive questions strictly grounded in the run's verified evidence catalog.</i></p>
+</div>
+
+---
+
 ## 🏗 System Architecture
 
 ```mermaid
