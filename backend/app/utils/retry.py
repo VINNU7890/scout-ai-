@@ -28,6 +28,7 @@ async def with_retry(
     """
     Executes an async function within a concurrency semaphore, applying
     exponential backoff retry for transient network errors and rate limit (429) errors.
+    Fails fast without pointless retries if daily quota is permanently exhausted.
     """
     delay = initial_delay
     last_error: Exception | None = None
@@ -39,6 +40,12 @@ async def with_retry(
             except Exception as e:
                 last_error = e
                 err_str = str(e).lower()
+
+                # Fail fast if hard daily limit is exceeded
+                if "per day limit exceeded" in err_str or "retry in 1" in err_str or "daily limit" in err_str:
+                    logger.warning(f"Daily API quota exhausted ({e}). Failing fast to dynamic findings synthesis.")
+                    raise e
+
                 is_rate_limit = (
                     "429" in err_str
                     or "resource_exhausted" in err_str

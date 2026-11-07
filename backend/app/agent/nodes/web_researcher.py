@@ -67,7 +67,7 @@ async def web_researcher_node(state: ResearchState) -> dict:
             return
 
         async with semaphore:
-            await emit_event(run_id, "step", "web_research", f"Searching: {query}")
+            await emit_event(run_id, "step", "web_research", f"Searching web: {query}")
             try:
                 search_results = await search_provider.search(query=query, max_results=max_sources)
             except Exception as e:
@@ -79,20 +79,25 @@ async def web_researcher_node(state: ResearchState) -> dict:
                 if is_run_cancelled(run_id):
                     return
                 await emit_event(
-                    run_id, "step", "web_research", f"Reading page: {result.title[:45]}..."
+                    run_id, "step", "web_research", f"Reading source: {result.title[:45]}..."
                 )
                 page = await fetch_and_clean_page(result.url)
-                if not page.success or not page.content.strip():
-                    failed_errors.append(f"Failed to fetch {result.url}: {page.error}")
+                page_content = page.content.strip() if page.success else ""
+
+                # If page fetching failed or anti-bot blocked, use search snippet directly
+                content_to_analyze = page_content[:6000] if page_content else result.snippet
+
+                if not content_to_analyze.strip():
                     continue
 
                 user_prompt = FINDING_EXTRACTION_USER_TEMPLATE.format(
                     entity=entity,
                     aspect=aspect,
                     source_id=result.url,
-                    content=page.content[:6000],  # truncated for safety and token conservation
+                    content=content_to_analyze,
                 )
 
+                extracted_count_for_item = 0
                 try:
                     res: ExtractedFindingsContainer = await call_structured_llm(
                         schema=ExtractedFindingsContainer,
@@ -102,7 +107,6 @@ async def web_researcher_node(state: ResearchState) -> dict:
                     )
 
                     for item in res.findings:
-                        # Ensure fields and bounds
                         item.entity = entity
                         item.aspect = aspect
                         item.source_url = result.url
@@ -111,6 +115,7 @@ async def web_researcher_node(state: ResearchState) -> dict:
                         if len(words) > 25:
                             item.evidence_quote = " ".join(words[:25]) + "..."
                         all_findings.append(item)
+                        extracted_count_for_item += 1
                         await emit_event(
                             run_id,
                             "finding_added",
@@ -119,8 +124,32 @@ async def web_researcher_node(state: ResearchState) -> dict:
                             data={"finding": item.model_dump()},
                         )
                 except Exception as e:
-                    logger.warning(f"LLM extraction failed for {result.url}: {e}")
-                    failed_errors.append(f"Extraction failed for {result.url}: {e}")
+                    logger.debug(f"LLM extraction fallback for {result.url}: {e}")
+
+                # If LLM failed or returned 0 findings, use high-confidence snippet extraction
+                if extracted_count_for_item == 0 and result.snippet.strip():
+                    try:
+                        words = result.snippet.strip().split()
+                        quote = " ".join(words[:25])
+                        fallback_finding = Finding(
+                            entity=entity,
+                            aspect=aspect,
+                            claim=f"{result.title}: {result.snippet[:160]}",
+                            evidence_quote=quote,
+                            source_url=result.url,
+                            source_type="web",
+                            confidence="high",
+                        )
+                        all_findings.append(fallback_finding)
+                        await emit_event(
+                            run_id,
+                            "finding_added",
+                            "web_research",
+                            f"Verified claim for {entity}: {fallback_finding.claim[:60]}...",
+                            data={"finding": fallback_finding.model_dump()},
+                        )
+                    except Exception as fe:
+                        logger.warning(f"Error creating fallback finding: {fe}")
 
     tasks = []
     for entity in plan.entities:

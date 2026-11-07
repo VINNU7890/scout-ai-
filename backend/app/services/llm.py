@@ -51,7 +51,7 @@ def get_gemini_chat_model(model_name: Optional[str] = None):
         model=model_name or settings.GEMINI_MODEL,
         google_api_key=api_key,
         temperature=0.2,
-        max_retries=2,
+        max_retries=1,
     )
 
 
@@ -78,25 +78,25 @@ async def call_structured_llm(
             return res
         elif isinstance(res, dict):
             return schema.model_validate(res)
-        return res
 
-    # Budget cap check
+    # Check budget
     if call_tracker is not None:
-        current_calls = call_tracker.get("calls", 0)
-        if current_calls >= settings.MAX_LLM_CALLS_PER_RUN:
+        if call_tracker.get("calls", 0) >= settings.MAX_LLM_CALLS_PER_RUN:
             raise QuotaExceededError(
-                f"Run exceeded maximum LLM call budget of {settings.MAX_LLM_CALLS_PER_RUN} calls."
+                f"Exceeded maximum allowed LLM calls ({settings.MAX_LLM_CALLS_PER_RUN}) for run."
             )
-        call_tracker["calls"] = current_calls + 1
 
     llm = get_gemini_chat_model(model_name)
     structured_llm = llm.with_structured_output(schema)
 
     validation_errors = 0
-    max_validation_attempts = 2
+    max_validation_attempts = 1
 
     async def _invoke() -> T:
         nonlocal validation_errors
+        if call_tracker is not None:
+            call_tracker["calls"] = call_tracker.get("calls", 0) + 1
+
         messages = [
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt),
@@ -104,6 +104,17 @@ async def call_structured_llm(
         try:
             return await structured_llm.ainvoke(messages)
         except Exception as e:
+            err_str = str(e).lower()
+            # If API error, fail fast and do not attempt JSON extraction retry
+            if (
+                "429" in err_str
+                or "resource_exhausted" in err_str
+                or "quota" in err_str
+                or "404" in err_str
+                or "not_found" in err_str
+            ):
+                raise e
+
             # If schema validation failed, try with JSON parsing fallback
             if validation_errors < max_validation_attempts:
                 validation_errors += 1
@@ -116,7 +127,6 @@ async def call_structured_llm(
                     text = "".join(x.get("text", "") if isinstance(x, dict) else str(x) for x in raw_c)
                 else:
                     text = str(raw_c)
-                # Attempt to extract JSON markdown block
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0].strip()
                 elif "```" in text:
