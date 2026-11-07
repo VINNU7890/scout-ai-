@@ -178,8 +178,8 @@ ScoutAI is engineered specifically to prevent the common hallucination issues of
 
 #### Step 1: Clone Repository
 ```bash
-git clone https://github.com/your-username/scoutai.git
-cd scoutai
+git clone https://github.com/VINNU7890/Scout-AI.git
+cd Scout-AI
 ```
 
 #### Step 2: Backend Setup
