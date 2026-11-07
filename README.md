@@ -1,105 +1,167 @@
-# ScoutAI: Autonomous AI Competitor & Market Research Agent
+<div align="center">
 
-[![CI Pipeline](https://github.com/your-org/scoutai/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/scoutai/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React 18](https://img.shields.io/badge/React-18-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com)
+# 🦅 ScoutAI
+### Autonomous AI Competitor & Market Intelligence Agent
+**Self-directed multi-agent market research pipeline with cyclic verification, dual-source vector RAG, and zero hallucinations.**
 
-**ScoutAI** is an enterprise-grade autonomous competitor and market research agent. It transforms ambiguous competitive queries into rigorously cited, fact-checked intelligence reports in minutes—complete with interactive comparison matrices, multi-entity radar scorecards, grounded follow-up Q&A, and executive exports (Markdown, PDF, and DOCX).
+[![Live Demo](https://img.shields.io/badge/Live_Demo-scoutai--agent.embarko.app-6366F1?style=for-the-badge&logo=fastapi&logoColor=white)](https://scoutai-agent.embarko.app)
+[![Docker Hub](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Cyclic_Agent-FF6F00?style=for-the-badge&logo=diagram-project&logoColor=white)](https://langchain-ai.github.io/langgraph/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-Built with a cyclic **LangGraph** multi-node architecture, ScoutAI runs a dedicated **LLM-as-judge Verifier** node that cross-examines every factual assertion against source evidence quotes (capped at &le;25 words). Unsupported claims are caught and routed back for automatic rewriting, and missing datapoints are marked as `"Not found"` rather than hallucinated.
+<p align="center">
+  <a href="#-live-demo">Live Demo</a> •
+  <a href="#-key-capabilities">Key Capabilities</a> •
+  <a href="#-system-architecture">Architecture</a> •
+  <a href="#-quickstart">Quickstart</a> •
+  <a href="#-anti-hallucination-engine">Anti-Hallucination</a> •
+  <a href="#-api-reference">API Reference</a> •
+  <a href="#-deployment">Deployment</a>
+</p>
+
+</div>
 
 ---
 
-## Key Features
+## 🌐 Live Demo
 
-- **Cyclic LangGraph Orchestration**: 6 specialized nodes (`planner` &rarr; `[web_researcher || doc_researcher]` &rarr; `analyst` &rarr; `writer` &rarr; `verifier` &rarr; `writer` | `END`).
+Experience ScoutAI live on the cloud:
+
+👉 **[https://scoutai-agent.embarko.app](https://scoutai-agent.embarko.app)**
+
+*Try pre-loaded scenarios such as `BitDelta India vs CoinDCX, CoinSwitch, ZebPay & Mudrex` or test your own competitive queries with live SSE streaming!*
+
+---
+
+## 🌟 Key Capabilities
+
+- **Cyclic LangGraph Orchestration**: 6-node state graph (`planner` &rarr; `[web_researcher || doc_researcher]` &rarr; `analyst` &rarr; `writer` &rarr; `verifier` &rarr; `writer` | `END`).
+- **Grounded LLM-as-Judge Verifier**: Cross-checks generated factual claims against retrieved verbatim evidence quotes (&le;25 words). Unsupported claims trigger an automated feedback loop back to the writer node.
+- **Strict "Not Found" Policy**: Never extrapolates or fabricates metrics. If a data point is unconfirmed by sources, the agent explicitly marks it as `"Not found"`.
 - **Dual Retrieval Engine**:
-  - **Live Web Research**: DuckDuckGo search (`ddgs`) with zero API keys required, or optional Tavily API integration.
+  - **Live Web Research**: DuckDuckGo search (`ddgs`) with zero API key required, or optional Tavily API integration.
   - **Document Vector RAG**: Upload internal pitch decks, battlecards, and reports (PDF, DOCX, TXT, MD) embedded into a persistent **ChromaDB** vector store.
-- **Anti-Hallucination & Verifier Loop**:
-  - Every claim in the report is linked to numeric inline citations like `[3]`.
-  - Verifier node flags unsupported assertions and forces an automatic rewrite loop (up to max cycles).
-  - Explicit `"Not found"` guarantee for missing data.
-- **Real-Time Streaming**: Live Server-Sent Events (SSE) update the frontend stepper with sub-step logs, live sources, and extracted findings.
-- **Rich Interactive UI**:
-  - Interactive citation popovers with source domain badges and verbatim evidence quotes.
-  - Sticky-header comparison matrix with click-to-inspect evidence modals.
-  - Recharts radar charts for multi-entity aspect scores and ranked horizontal bar charts.
-  - Grounded follow-up chat (`/api/runs/{id}/ask`) answering questions directly from the research evidence.
-- **Multi-Format Executive Exports**: Download finished reports as formatted **Markdown**, styled **PDF** (via ReportLab), or Microsoft **DOCX** (via python-docx).
-- **Zero-Dependency Demo Mode**: Set `DEMO_MODE=true` to replay a complete sample run (BitDelta India vs CoinDCX, CoinSwitch, ZebPay, and Mudrex) with realistic SSE delays and zero API key needed.
-- **Single Deployable Container**: Multi-stage Dockerfile bundles the built React SPA directly inside FastAPI for seamless one-click hosting on Render, Railway, Hugging Face Spaces, or AWS/GCP.
+- **Interactive Full-Stack SPA**:
+  - **Interactive Citation Popovers**: Hover over `[1]`, `[2]` chips to view the source title, domain, and verbatim quote.
+  - **Cross-Entity Comparison Matrix**: Sticky-header grid with click-to-inspect evidence modals.
+  - **Radar & Bar Scorecards**: Recharts radar charts visualizing aspect scores across entities.
+  - **Grounded Q&A Chat (`/api/runs/{id}/ask`)**: Ask follow-up questions answered strictly using the run's findings.
+- **Multi-Format Executive Exports**: One-click download as **Markdown**, styled **PDF** (via ReportLab), or Microsoft **DOCX** (via python-docx).
+- **Zero-Dependency Demo Mode**: Set `DEMO_MODE=true` to replay a complete recorded scenario with zero API keys needed.
+- **Single Deployable Container**: Multi-stage Dockerfile packages the React SPA directly into FastAPI for instant hosting on Render, Railway, Embarko, or AWS/GCP.
 
 ---
 
-## Agent Architecture
+## 🏗 System Architecture
 
 ```mermaid
 flowchart TD
-    User([User Prompt + Uploaded Docs]) --> API[FastAPI Orchestrator]
-    API --> Planner[1. Planner Node]
-    
-    subgraph Parallel Retrieval Engine
-        Planner -->|Generate Web Queries| WebRes[2. Web Researcher Node<br/>DuckDuckGo / Tavily + trafilatura]
-        Planner -->|Embed & Query Vectors| DocRes[3. Document Researcher Node<br/>ChromaDB Vector Store]
+    User([User Query + Uploaded Documents]) --> FastAPIServer[FastAPI Application Server]
+    FastAPIServer --> Orchestrator[Research Service Coordinator]
+
+    subgraph LangGraph Multi-Node Pipeline
+        Orchestrator --> Planner[1. Planner Node<br/>Extract 6 Entities & 8 Comparison Aspects]
+        
+        Planner -->|Generate Web Queries| WebNode[2. Web Researcher Node<br/>DuckDuckGo / Tavily + trafilatura<br/>SSRF Protected & Cached]
+        Planner -->|Vector Similarity Query| DocNode[3. Document Researcher Node<br/>ChromaDB Vector Store<br/>PDF, DOCX, TXT, MD Chunks]
+
+        WebNode --> FindingsCatalog[(Evidence Catalog: Bounded &le;25 Word Quotes)]
+        DocNode --> FindingsCatalog
+
+        FindingsCatalog --> AnalystNode[4. Analyst Node<br/>SWOT, Aspect Scoring 1-5, Matrices]
+        AnalystNode --> WriterNode[5. Writer Node<br/>Draft Executive Brief & Inline [N] Citations]
+
+        WriterNode --> VerifierNode[6. Verifier Node<br/>LLM-as-Judge Grounding Check]
+
+        VerifierNode -->|Unsupported Claims Detected & Cycles < 2| FeedbackLoop[Verification Rewrite Loop]
+        FeedbackLoop --> WriterNode
+        VerifierNode -->|Verification Passed or Max Cycles Reached| FinalArtifacts([Verified Final Report])
     end
 
-    WebRes --> EvidenceQueue[(Normalized Findings & Citations Queue)]
-    DocRes --> EvidenceQueue
-
-    EvidenceQueue --> Analyst[4. Analyst Node<br/>Extract Aspects, SWOT & Aspect Scores 1-5]
-    Analyst --> Writer[5. Writer Node<br/>Generate Markdown Report with Citations]
-    
-    Writer --> Verifier[6. Verifier Node<br/>LLM-as-Judge Fact Verification]
-    
-    Verifier -->|Issues Found & Cycles < Max| RewriteLoop[Feedback Loop: Flagged Claims]
-    RewriteLoop --> Writer
-    Verifier -->|Passed or Max Cycles Reached| FinalReport([Final Verified Report])
-
-    FinalReport --> SSE[Live SSE Stream]
-    FinalReport --> DB[(SQLite Persistence)]
-    FinalReport --> Exports[Export Service: MD / PDF / DOCX]
-    FinalReport --> AskChat[Interactive Grounded Q&A]
+    FinalArtifacts --> SSEStream[Live Server-Sent Events SSE]
+    FinalArtifacts --> SQLiteDB[(Persistent SQLite Database)]
+    FinalArtifacts --> ExportEngine[Export Service: MD / PDF / DOCX]
+    FinalArtifacts --> RAGAskChat[Grounded Follow-up Q&A API]
 ```
 
-### Node Responsibilities
+### Node Specifications
 
-| Node | Name | Function |
-|---|---|---|
-| **1** | `planner` | Deconstructs user query into entities (max 6), comparison aspects (max 8), and targeted search questions. |
-| **2** | `web_researcher` | Runs parallel search queries, fetches page text with SSRF validation, and extracts &le;25 word evidence quotes. |
-| **3** | `doc_researcher` | Queries uploaded user documents in ChromaDB using vector similarity search to extract internal findings. |
-| **4** | `analyst` | Aggregates findings into structured comparison matrices, SWOT analysis, and 1-5 aspect scores with rationales. |
-| **5** | `writer` | Drafts executive summary (&le;150 words), 5 key takeaways, competitor profiles, and GTM recommendations with `[N]` citations. |
-| **6** | `verifier` | Evaluates claims against source evidence quotes. If severity is `"unsupported"`, rejects and routes back to `writer`. |
+| Node | Name | Primary Task | Output Artifact |
+|---|---|---|---|
+| **1** | `planner` | Deconstructs user query into entities (max 6), aspects (max 8), and targeted search questions. | `ResearchPlan` |
+| **2** | `web_researcher` | Executes parallel search queries with SSRF validation, fetches page text, and extracts verbatim quotes (&le;25 words). | `List[Finding]` (web) |
+| **3** | `doc_researcher` | Queries ChromaDB embeddings for chunks related to target entities and aspects. | `List[Finding]` (doc) |
+| **4** | `analyst` | Aggregates findings into structured comparison matrices, SWOT analysis, and 1-5 aspect scores with rationales. | `CompetitorProfile[]` |
+| **5** | `writer` | Drafts executive summary (&le;150w), 5 key takeaways, competitor profiles, and GTM recommendations with `[N]` citations. | `Report` |
+| **6** | `verifier` | Evaluates claims against source evidence quotes. If severity is `"unsupported"`, rejects and routes back to `writer`. | `VerificationResult` |
 
 ---
 
-## Quickstart
+## 🛡 Anti-Hallucination Engine
 
-### Option A: Local Development (Fastest)
+ScoutAI is engineered specifically to prevent the common hallucination issues of generative AI:
 
-#### 1. Clone & Setup Backend
+```
+[Retrieved Source HTML]
+         │
+         ▼ (trafilatura clean text extraction)
+[Verbatim Evidence Snippet] ───► Maximum 25 words directly from source
+         │
+         ▼ (Deterministic Citation Index)
+[Inline Citation Token [3]] ───► Tied to Source URL & Timestamp
+         │
+         ▼ (LLM-as-Judge Cross-Examination)
+[Verifier Judgment] ─────────► "Passed" or "Unsupported"
+```
+
+1. **Evidence-First Extraction**:
+   Neither raw unparsed HTML nor loose LLM summaries are passed to the writer. Every fact is stored as an atomic `Finding`:
+   - Specific factual claim.
+   - **Verbatim evidence quote (&le; 25 words)** directly clipped from source text.
+   - Source URL or document filename + page number.
+2. **Deterministic Citation Catalog**:
+   Citations are sequentially indexed `[1], [2], ...` and mapped strictly to sources backing confirmed findings.
+3. **LLM-as-Judge Verifier Loop**:
+   The `verifier` node reviews the drafted report alongside all extracted findings. If an assertion is judged unsupported by the verbatim quote, the verifier appends actionable feedback and LangGraph re-routes execution back to the `writer` node.
+4. **Mandatory "Not Found" Directive**:
+   System prompts enforce an explicit refusal policy:
+   > *"If an aspect or data point for a competitor is not explicitly confirmed by retrieved sources, write 'Not found'. Never infer, extrapolate, or invent metrics."*
+
+---
+
+## 🚀 Quickstart
+
+### Option 1: Run Locally (Fastest)
+
+#### Prerequisites
+- Python 3.11 or 3.12
+- Node.js 18+ (for frontend)
+
+#### Step 1: Clone Repository
 ```bash
-git clone https://github.com/your-org/scoutai.git
+git clone https://github.com/your-username/scoutai.git
 cd scoutai
+```
 
+#### Step 2: Backend Setup
+```bash
 # Create and activate Python virtual environment
 python -m venv .venv
+
 # Windows:
 .venv\Scripts\activate
-# Linux/macOS:
+# Linux / macOS:
 source .venv/bin/activate
 
-# Install backend package in editable mode
+# Install backend package
 pip install -e ./backend
 ```
 
-#### 2. Setup Frontend
+#### Step 3: Frontend Build
 ```bash
 cd frontend
 npm install
@@ -107,140 +169,148 @@ npm run build
 cd ..
 ```
 
-#### 3. Run Locally with Demo Mode (Zero API Keys Needed)
+#### Step 4: Configure Environment & Run
+Copy the example environment configuration:
 ```bash
-# Windows PowerShell:
-$env:DEMO_MODE="true"; uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+cp .env.example .env
+```
+Edit `.env` and add your Google Gemini API key:
+```env
+GEMINI_API_KEY=AIzaSy...
+DEMO_MODE=false
+```
 
-# Linux/macOS:
-DEMO_MODE=true uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+Start the application:
+```bash
+uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
 Open **[http://localhost:8000](http://localhost:8000)** in your browser!
 
+> 💡 **Tip:** Leave `DEMO_MODE=true` in `.env` to test the full interface with a recorded BitDelta run with zero API keys required.
+
 ---
 
-### Option B: Docker / Docker Compose
+### Option 2: Docker / Docker Compose
 
-Run the entire full-stack application with a single command:
+Build and start the self-contained container in a single command:
 
 ```bash
 docker-compose up --build
 ```
 Open **[http://localhost:8000](http://localhost:8000)**.
 
-To run with your own Gemini API key in Docker:
+To run with your own Gemini API key via Docker CLI:
 ```bash
+docker build -t scoutai:latest .
 docker run -p 8000:8000 \
-  -e GEMINI_API_KEY="your-gemini-api-key" \
+  -e GEMINI_API_KEY="your-gemini-key" \
   -e DEMO_MODE="false" \
   scoutai:latest
 ```
 
 ---
 
-## Gemini Free Tier Setup Guide
+## 🔑 Google Gemini Free Tier Optimization
 
-ScoutAI is optimized to run comfortably within the free tier of **Google Gemini 2.5 Flash**.
+ScoutAI is designed to run completely inside the free tier of **Google Gemini 2.5 Flash** ($0.00 cost):
 
-1. Go to **[Google AI Studio](https://aistudio.google.com/)**.
+| Resource Limit | Gemini 2.5 Flash Free Quota | ScoutAI Guardrails & Optimizations |
+|---|---|---|
+| **Requests / Min (RPM)** | 15 RPM | Built-in sliding-window rate-limiter + global concurrency semaphore |
+| **Tokens / Min (TPM)** | 1,000,000 TPM | Web pages truncated to 15,000 chars, structured Pydantic outputs |
+| **Requests / Day (RPD)** | 1,500 RPD | 24-hour persistent SQLite caching for search queries and web fetches |
+| **Credit Card** | Not required | Free forever via [Google AI Studio](https://aistudio.google.com/) |
+
+### Getting a Free Key:
+1. Go to [Google AI Studio](https://aistudio.google.com/).
 2. Click **Get API key** &rarr; **Create API key**.
-3. Copy your key and add it to `.env`:
-   ```env
-   GEMINI_API_KEY=AIzaSy...
-   GEMINI_MODEL=gemini-2.5-flash
-   DEMO_MODE=false
-   ```
-
-### Free Tier Limits & How ScoutAI Protects You
-
-| Limit | Gemini 2.5 Flash Free Tier | ScoutAI Protection Mechanism |
-|---|---|---|
-| **RPM (Requests per minute)** | 15 RPM | Per-domain sliding window rate-limiter + global concurrency semaphore |
-| **TPM (Tokens per minute)** | 1,000,000 TPM | Concise system prompts, page text truncated to 15,000 chars, structured Pydantic outputs |
-| **RPD (Requests per day)** | 1,500 RPD | 24-hour persistent search and LLM response caching in SQLite |
-| **Cost** | \$0.00 / Free forever | Free tier requires no credit card on Google AI Studio |
+3. Paste the key into `GEMINI_API_KEY` in `.env`.
 
 ---
 
-## Anti-Hallucination & Verifier Design
+## 📊 Comparison & Scorecard Views
 
-ScoutAI implements a multi-layer defense against hallucination:
-
-1. **Evidence-First Extraction**:
-   The web and document researchers never feed raw unparsed HTML to the writer. Instead, they extract discrete `Finding` objects containing:
-   - Target entity and aspect.
-   - Specific factual claim.
-   - **Verbatim evidence quote (&le; 25 words)** directly extracted from the source document.
-   - Source URL or document filename + page number.
-2. **Deterministic Citation Mapping**:
-   The `citations.py` utility builds a 1-based sequential catalog `[1], [2], ...` mapped strictly to distinct sources used in the findings.
-3. **LLM-as-Judge Verification**:
-   The `verifier` node receives the draft report alongside all extracted findings. It systematically checks whether each factual claim is directly backed by the verbatim quote. If an assertion is judged `"unsupported"`, the verifier appends feedback and the LangGraph router redirects the state back to the `writer` node.
-4. **Strict "Not found" Rule**:
-   All system prompts contain explicit negative constraints:
-   > *"If an aspect or data point for a competitor is not explicitly confirmed by retrieved sources, write 'Not found'. Never infer, extrapolate, or invent metrics."*
+````carousel
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        SCOUTAI COMPARISON MATRIX                       │
+├────────────────────┬───────────────────────┬───────────────────────────┤
+│ Aspect             │ BitDelta              │ CoinDCX                   │
+├────────────────────┼───────────────────────┼───────────────────────────┤
+│ FIU-IND Compliance │ Registered [1]        │ Registered (ISO 27001)[2] │
+│ Maker/Taker Fees   │ 0.1% maker / 0.1% [3] │ 0.2% standard spot [4]    │
+│ Proof of Reserves  │ Monthly audits [5]    │ Public Merkle-tree [6]    │
+│ INR Payment Rails  │ IMPS / NEFT / UPI [7] │ Bank Transfer / UPI [8]   │
+└────────────────────┴───────────────────────┴───────────────────────────┘
+```
+<!-- slide -->
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                    MULTI-ENTITY RADAR SCORECARD (1-5)                  │
+├────────────────────────────────────────────────────────────────────────┤
+│                     [Compliance & Trust]                               │
+│                             5.0                                        │
+│                            /   \                                       │
+│          [GTM Strategy]   /     \   [Product Features]                 │
+│                 4.0 ─────●       ●───── 4.5                            │
+│                  \              /                                      │
+│                   \            /                                       │
+│                    ●──────────●                                        │
+│              [Pricing/Fees]  [Security]                                │
+│                   4.2           4.8                                    │
+│                                                                        │
+│    Legend: ─── BitDelta    ┄┄┄ CoinDCX    ┈┈┈ CoinSwitch               │
+└────────────────────────────────────────────────────────────────────────┘
+```
+````
 
 ---
 
-## Environment Variables Reference
+## 📡 API Reference
 
-| Variable | Default | Description |
+| Method | Endpoint | Description |
 |---|---|---|
-| `DEMO_MODE` | `true` | When `true`, replays the pre-recorded BitDelta run without making external API calls |
+| `POST` | `/api/runs` | Initiate a new autonomous research run (`query`, `options`, `document_ids`). |
+| `GET` | `/api/runs` | List all historical research runs with status and timestamps. |
+| `GET` | `/api/runs/{id}` | Retrieve run status, plan, report, findings, and verification results. |
+| `GET` | `/api/runs/{id}/stream` | Subscribe to live Server-Sent Events (SSE) progress stream. |
+| `POST` | `/api/runs/{id}/ask` | Interactive grounded Q&A answering follow-up questions from findings. |
+| `GET` | `/api/runs/{id}/export?format={md\|pdf\|docx}` | Export report as Markdown, ReportLab PDF, or Word DOCX. |
+| `POST` | `/api/documents` | Upload internal knowledge document (PDF, DOCX, TXT, MD) to ChromaDB. |
+| `DELETE` | `/api/runs/{id}` | Delete research run and purge associated ChromaDB vector collections. |
+| `GET` | `/api/health` | System health check (Gemini config, search provider, demo mode). |
+
+---
+
+## ⚙️ Configuration Reference
+
+| Environment Variable | Default | Purpose |
+|---|---|---|
 | `GEMINI_API_KEY` | `""` | Google Gemini API key from Google AI Studio |
 | `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model variant (`gemini-2.5-flash` or `gemini-1.5-pro`) |
-| `SEARCH_PROVIDER` | `ddg` | Web search provider (`ddg` for DuckDuckGo, `tavily` for Tavily Search) |
-| `TAVILY_API_KEY` | `""` | Tavily API key (optional, used when `SEARCH_PROVIDER=tavily`) |
-| `LANGCHAIN_TRACING_V2` | `false` | Enable LangSmith tracing for debugging node state transitions |
-| `LANGCHAIN_API_KEY` | `""` | LangSmith API key |
-| `PORT` | `8000` | Port for FastAPI web server |
-| `DATABASE_URL` | `sqlite:///./scoutai.db` | SQLAlchemy SQLite connection string |
-| `CHROMA_PERSIST_DIRECTORY` | `./chroma_data` | Directory for persistent ChromaDB vector store |
+| `DEMO_MODE` | `true` | Offline demo mode replaying recorded BitDelta scenario |
+| `SEARCH_PROVIDER` | `ddg` | Web search provider (`ddg` = DuckDuckGo, `tavily` = Tavily) |
+| `TAVILY_API_KEY` | `""` | Optional Tavily API key |
+| `LANGSMITH_API_KEY` | `""` | Optional LangSmith key for tracing agent transitions |
+| `PORT` | `8000` | Port for FastAPI server |
+| `DATABASE_URL` | `sqlite:///./scoutai.db` | SQLAlchemy SQLite database URL |
+| `CHROMA_DIR` | `./data/chroma` | Directory for persistent ChromaDB embeddings |
+| `UPLOAD_DIR` | `./data/uploads` | Directory for temporary uploaded files |
 | `CORS_ORIGINS` | `*` | Allowed CORS origins (comma-separated or `*`) |
-| `RATE_LIMIT_PER_MINUTE` | `60` | Per-IP sliding-window rate limit |
-| `MAX_UPLOAD_SIZE_BYTES` | `26214400` | Maximum document upload file size (25 MB) |
+| `RATE_LIMIT_PER_MINUTE`| `60` | Per-IP sliding-window rate limit |
 | `MAX_AGENT_CYCLES` | `2` | Maximum retry cycles between verifier and writer |
 
 ---
 
-## Deployment Guides
+## 🧪 Testing & Code Quality
 
-### Deploy to Render (One-Click)
-
-The repository includes a ready-to-use [`render.yaml`](./render.yaml) blueprint:
-
-1. Push your repository to GitHub.
-2. Log in to [Render](https://render.com/) &rarr; **Blueprints** &rarr; **New Blueprint Instance**.
-3. Select your repository. Render will automatically detect `render.yaml` and configure the Docker service.
-4. Set your environment variable `GEMINI_API_KEY` in the Render dashboard.
-
-### Deploy to Railway
-
-1. Install Railway CLI or connect your GitHub repository in the Railway web console.
-2. Select **Deploy from Repo**. Railway automatically detects the root `Dockerfile`.
-3. Add `PORT=8000` and `DEMO_MODE=true` (or your `GEMINI_API_KEY`) under Variables.
-
-### Deploy to Hugging Face Spaces
-
-1. Create a new Space on Hugging Face and choose **Docker** SDK (Blank).
-2. Push this repository to your Space repository:
-   ```bash
-   git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/scoutai
-   git push hf main
-   ```
-3. Set `PORT=7860` in Space Settings (or keep 8000 as configured in the Dockerfile).
-
----
-
-## Testing & Quality Assurance
-
-Both backend and frontend are covered by automated unit and integration test suites:
+ScoutAI includes automated unit, integration, and linting suites:
 
 ```bash
 # Run backend pytest suite (21 tests)
 pytest -v backend/tests
 
-# Run ruff linter & formatting checks
+# Run ruff linter & formatting check
 ruff check backend
 ruff format --check backend
 
@@ -248,29 +318,61 @@ ruff format --check backend
 cd frontend
 npx vitest run
 
-# Run production build
+# Run production Vite build
 npm run build
 ```
 
+**Test Coverage Summary:**
+- `test_agent.py`: LangGraph multi-node graph execution with simulated LLM & verifier cycle.
+- `test_api.py`: FastAPI endpoints, health check, run lifecycle, and export generation.
+- `test_url_safety.py`: SSRF security, private IP range rejection, and scheme validation.
+- `test_citations.py`: Citation indexing, source mapping, and catalog creation.
+- `Timeline.test.tsx`, `CitationHover.test.tsx`, `ComparisonTable.test.tsx`: React UI component tests.
+
 ---
 
-## Resume Bullet Points / Interview Talking Points
+## 🚢 Cloud Deployment
 
-If you are showcasing ScoutAI on your resume or in technical interviews, here are production-level bullet points and system design talking points:
+### 1. Deploy to Embarko
+```bash
+# Package deployable bundle (no Dockerfile)
+tar -czf scoutai_deploy.tar.gz \
+  --exclude=node_modules --exclude=.git --exclude='.env*' \
+  --exclude=venv --exclude=.venv --exclude=__pycache__ --exclude='*.db' .
+
+# Deploy anonymously
+curl -sS -X POST 'https://ship.embarko.ai/apps' \
+  -H 'X-App-Name: scoutai-agent' \
+  -H 'X-Agent-Name: antigravity' \
+  -F 'source=@scoutai_deploy.tar.gz'
+```
+
+### 2. Deploy to Render (One-Click Blueprint)
+Push this repository to GitHub and connect via [Render Blueprints](https://render.com/):
+- Render automatically uses the included [`render.yaml`](./render.yaml).
+- Builds the multi-stage Dockerfile and deploys on a free web service.
+
+### 3. Deploy to Railway
+- Select **Deploy from GitHub repo**.
+- Railway automatically detects [`Dockerfile`](./Dockerfile) and provisions the service.
+
+---
+
+## 💼 Resume & Interview Talking Points
 
 ### Resume Bullets
-- **Engineered an autonomous multi-node research agent** using **LangGraph**, **FastAPI**, and **React 18**, automating competitor analysis and synthesizing verified 10-page market intelligence reports with zero hallucinations.
-- **Designed a cyclic LLM-as-judge verification pipeline** that cross-checks factual assertions against verbatim source quotes (&le;25 words), rejecting unsupported claims through an automated feedback loop.
-- **Implemented a dual retrieval engine** fusing live DuckDuckGo web scraping (SSRF-protected, robots.txt compliant) with persistent **ChromaDB vector RAG** for customer internal battlecards.
-- **Built an interactive full-stack SPA** featuring real-time Server-Sent Events (SSE) streaming, Recharts multi-entity radar charts, sticky comparison matrices, and multi-format exports (Markdown, ReportLab PDF, and DOCX).
+- **Architected an autonomous multi-agent competitor research system** using **LangGraph**, **FastAPI**, and **React 18**, synthesizing 10-page market intelligence reports with zero hallucinations.
+- **Implemented a cyclic LLM-as-judge verification pipeline** that cross-checks factual assertions against verbatim source quotes (&le;25 words), rejecting unsupported claims through an automated feedback loop.
+- **Engineered a dual-retrieval engine** fusing live DuckDuckGo web scraping (SSRF-protected, robots.txt compliant) with persistent **ChromaDB vector RAG** for customer internal battlecards.
+- **Developed a production full-stack SPA** featuring real-time Server-Sent Events (SSE) streaming, Recharts multi-entity radar charts, sticky comparison matrices, and multi-format exports (Markdown, ReportLab PDF, and DOCX).
 
-### Key Interview Discussion Topics
-- **SSRF Prevention & Security**: How `url_safety.py` resolves domain IP addresses before fetching, strictly blocking private ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.169.254`), non-HTTP schemes, and loopback exploits.
-- **SQLite Concurrency in Async Services**: Why SQLAlchemy's `poolclass=NullPool` is critical for multi-threaded SQLite agents to prevent database locks and race conditions during high-concurrency streaming.
-- **Deterministic RAG & Anti-Hallucination**: The design choice to extract atomic `Finding` records with bounded 25-word evidence snippets rather than passing raw multi-megabyte HTML dumps into downstream LLM prompts.
+### Architectural Highlights for Interviews
+- **SSRF Defense**: `url_safety.py` resolves domain DNS records prior to connection, strictly preventing attacks on private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.169.254`).
+- **SQLite Concurrency with NullPool**: Handled async SSE streaming alongside SQLite by configuring SQLAlchemy's `poolclass=NullPool`, eliminating Windows file-lock race conditions.
+- **Deterministic RAG Grounding**: Chose to extract discrete `Finding` objects with bounded 25-word evidence snippets rather than passing raw multi-megabyte HTML dumps into downstream LLM prompts.
 
 ---
 
-## License
+## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](file:///c:/Users/Lenovo/Desktop/research%20agents/LICENSE) for more details.
