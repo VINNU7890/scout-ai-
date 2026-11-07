@@ -111,7 +111,11 @@ async def call_structured_llm(
                     f"Structured invocation validation error: {e}. Retrying with raw JSON extraction..."
                 )
                 raw_resp = await llm.ainvoke(messages)
-                text = raw_resp.content if hasattr(raw_resp, "content") else str(raw_resp)
+                raw_c = raw_resp.content if hasattr(raw_resp, "content") else str(raw_resp)
+                if isinstance(raw_c, list):
+                    text = "".join(x.get("text", "") if isinstance(x, dict) else str(x) for x in raw_c)
+                else:
+                    text = str(raw_c)
                 # Attempt to extract JSON markdown block
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0].strip()

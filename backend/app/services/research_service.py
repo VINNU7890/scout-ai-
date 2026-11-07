@@ -61,8 +61,22 @@ async def execute_research_run(run_id: str) -> None:
         run_record.status = "planning"
         db.commit()
 
-    # If demo mode is active, simulate run
-    if settings.DEMO_MODE:
+    # If demo mode is active and no key is configured, check if we should simulate
+    cfg = get_settings()
+    is_bitdelta_query = "bitdelta" in query.lower()
+
+    if cfg.DEMO_MODE and not cfg.effective_gemini_key:
+        if not is_bitdelta_query:
+            err_msg = "Custom research queries require a GEMINI_API_KEY. In DEMO_MODE without an API key, only the pre-recorded BitDelta demo is available."
+            with SessionLocal() as db:
+                r = db.scalar(select(ResearchRun).where(ResearchRun.id == run_id))
+                if r:
+                    r.status = "failed"
+                    r.error_message = err_msg
+                    db.commit()
+            await emit_event(run_id, "error", "done", err_msg)
+            return
+
         try:
             await run_demo_simulation(run_id)
         except Exception as e:

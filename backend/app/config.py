@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # API Keys & Providers
     GOOGLE_API_KEY: str = Field(default="", description="Google Gemini API key")
     GEMINI_API_KEY: str = Field(default="", description="Alias for Google API key")
-    GEMINI_MODEL: str = Field(default="gemini-2.5-flash", description="Gemini chat model")
+    GEMINI_MODEL: str = Field(default="gemini-3.5-flash", description="Gemini chat model")
     GEMINI_EMBED_MODEL: str = Field(
         default="models/gemini-embedding-001", description="Gemini embeddings model"
     )
