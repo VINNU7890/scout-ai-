@@ -4,7 +4,7 @@
 ### Autonomous AI Competitor & Market Intelligence Agent
 **Self-directed multi-agent market research pipeline with cyclic verification, dual-source vector RAG, and zero hallucinations.**
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-scoutai--agent.embarko.app-6366F1?style=for-the-badge&logo=fastapi&logoColor=white)](https://scoutai-agent.embarko.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-scoutai--app.embarko.app-6366F1?style=for-the-badge&logo=fastapi&logoColor=white)](https://scoutai-app.embarko.app)
 [![Docker Hub](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -31,7 +31,7 @@
 
 Experience ScoutAI live on the cloud:
 
-👉 **[https://scoutai-agent.embarko.app](https://scoutai-agent.embarko.app)**
+👉 **[https://scoutai-app.embarko.app](https://scoutai-app.embarko.app)**
 
 *Try pre-loaded scenarios such as `BitDelta India vs CoinDCX, CoinSwitch, ZebPay & Mudrex` or test your own competitive queries with live SSE streaming!*
 
